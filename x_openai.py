@@ -1,4 +1,5 @@
 import base64
+from dataclasses import dataclass
 import mimetypes
 from x_image import base64_mimetype
 from openai import OpenAI
@@ -85,7 +86,24 @@ def ask_openai(prompt:str,
         )  
     return response          
 
- 
+ANSW_CONTENT = "content"
+ANSW_FINISH = "finish_reason" 
 
+@dataclass
+class ChatResult:
+    completion:ChatCompletion
 
+    def total_token(self) -> int:
+        return self.completion.usage.total_tokens
+
+    def count_choices(self) -> int:
+        return len(self.completion.choices)
+
+    def choice(self,index:int=0) -> dict:
+        if index >= len(self.completion.choices):
+            return None
+        return {
+            ANSW_CONTENT: self.completion.choices[index].message.content,
+            ANSW_FINISH: self.completion.choices[index].finish_reason
+        }
 
